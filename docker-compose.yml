@@ -1,0 +1,45 @@
+version: '3.8'
+
+services:
+    php:
+        user: "1000:1000"
+        build:
+            context: .
+            dockerfile: docker/php/Dockerfile
+        volumes:
+            - ./:/var/www/html
+        networks:
+            - laravel
+
+    nginx:
+        build:
+            context: .
+            dockerfile: docker/nginx/Dockerfile
+        volumes:
+            - ./docker/nginx/default.conf:/etc/nginx/conf.d/default.conf
+            - ./:/var/www/html:ro
+        ports:
+            - "8080:80"
+        networks:
+            - laravel
+        depends_on:
+            - php
+
+    db:
+        image: mysql:5.7
+        environment:
+            MYSQL_DATABASE: laravel
+            MYSQL_ROOT_PASSWORD: your_root_password
+        ports:
+            - "3306:3306"
+        networks:
+            - laravel
+        volumes:
+            - dbdata:/var/lib/mysql
+
+networks:
+    laravel:
+        driver: bridge
+
+volumes:
+    dbdata:
